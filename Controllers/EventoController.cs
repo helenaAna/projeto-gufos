@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gufos.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +11,7 @@ namespace Gufos.Controllers {
     [Produces ("application/json")]
     public class EventoController : ControllerBase {
         GufosContext context = new GufosContext ();
-
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<Evento>>> Get () {
             List<Evento> listaDeEvento = await context.Evento.Include (c => c.Categoria).Include(l => l.Localizacao).ToListAsync ();
