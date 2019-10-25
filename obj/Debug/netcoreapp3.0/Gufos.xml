@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Gufos</name>
+    </assembly>
+    <members>
+        <member name="M:Gufos.Controllers.LoginController.autenticarUsuario(Gufos.Models.Usuario)">
+            <summary>
+            Método privado que valida se um usuário exixte no nosso banco de dados
+            </summary>
+            <param name="login">Objeto do tipo usuário</param>
+            <returns>Objeto do tipo Usuário</returns>
+        </member>
+        <member name="M:Gufos.Controllers.PresencaController.Get">
+            <summary>
+            Método de consulta de presenças cadastradas
+            </summary>
+            <returns> Retorna as listas de presença já cadastradas</returns>
+        </member>
+        <member name="M:Gufos.Controllers.PresencaController.Get(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gufos.Controllers.PresencaController.Post(Gufos.Models.Presenca)">
+            <summary>
+            
+            </summary>
+            <param name="presenca"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gufos.Controllers.PresencaController.Put(System.Int32,Gufos.Models.Presenca)">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <param name="presenca"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gufos.Controllers.PresencaController.Delete(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

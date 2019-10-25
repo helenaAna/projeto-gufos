@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gufos.Models;
+using Gufos.Repositorio;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,11 +10,11 @@ namespace Gufos.Controllers {
     [ApiController]
     [Produces ("application/json")]
     public class LocalizacaoController : ControllerBase {
-        GufosContext context = new GufosContext ();
+         LocalizacaoRepositorio repositorio = new LocalizacaoRepositorio();
 
         [HttpGet]
         public async Task<ActionResult<List<Localizacao>>> Get () {
-            List<Localizacao> listaDeLocalizacao = await context.Localizacao.ToListAsync ();
+            List<Localizacao> listaDeLocalizacao = await repositorio.Get();
 
             if (listaDeLocalizacao == null) {
                 return NotFound ();
@@ -23,7 +24,7 @@ namespace Gufos.Controllers {
 
         [HttpGet ("{id}")]
         public async Task<ActionResult<Localizacao>> Get (int id) {
-            Localizacao localizacaoRetornada = await context.Localizacao.FindAsync (id);
+            Localizacao localizacaoRetornada = await repositorio.Get(id);
             if (localizacaoRetornada == null) {
                 return NotFound ();
             }
@@ -33,8 +34,7 @@ namespace Gufos.Controllers {
         [HttpPost]
         public async Task<ActionResult<Localizacao>> Post (Localizacao localizacao) {
             try {
-                await context.Localizacao.AddAsync (localizacao);
-                await context.SaveChangesAsync ();
+                await repositorio.Post(localizacao);
 
             } catch (System.Exception) {
 
@@ -48,34 +48,34 @@ namespace Gufos.Controllers {
             if (id != localizacao.LocalizacaoId) {
                 return BadRequest ();
             }
-            context.Entry (localizacao).State = EntityState.Modified;
-
+        
             try {
-                await context.SaveChangesAsync ();
+                await repositorio.Put(localizacao);
             } catch (DbUpdateConcurrencyException) {
-                var localizacaoValida = context.Localizacao.FindAsync (id);
+                var localizacaoValida = await repositorio.Get(id);
                 if (localizacaoValida == null) {
                     return NotFound ();
                 }
+                else
+                {
+                    throw;
+                }
             }
-
-            await context.SaveChangesAsync ();
-
             return localizacao;
         }
+    
 
         [HttpDelete ("{id}")]
 
-        public async Task<ActionResult<Localizacao>> Delete (int id) {
-            Localizacao localizacaoRetornada = await context.Localizacao.FindAsync (id);
-            if (localizacaoRetornada == null) {
+        public async Task<ActionResult<Localizacao>> Delete (int id) 
+        {
+            Localizacao localizacaoRetornada = await repositorio.Get(id);
+            if (localizacaoRetornada == null) 
+            {
                 return NotFound ();
             }
-            context.Localizacao.Remove (localizacaoRetornada);
-            await context.SaveChangesAsync ();
-
+            await repositorio.Delete (localizacaoRetornada);
             return localizacaoRetornada;
         }
-
     }
 }

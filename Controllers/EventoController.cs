@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gufos.Models;
+using Gufos.Repositorio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +11,11 @@ namespace Gufos.Controllers {
     [ApiController]
     [Produces ("application/json")]
     public class EventoController : ControllerBase {
-        GufosContext context = new GufosContext ();
+        EventoRepositorio repositorio = new EventoRepositorio();
         [Authorize]
         [HttpGet]
-        public async Task<ActionResult<List<Evento>>> Get () {
-            List<Evento> listaDeEvento = await context.Evento.Include (c => c.Categoria).Include(l => l.Localizacao).ToListAsync ();
-
+        public async Task<ActionResult<List<Evento>>> Get() {
+            List<Evento> listaDeEvento = await repositorio.Get();
             if (listaDeEvento == null) {
                 return NotFound ();
             }
@@ -28,8 +28,9 @@ namespace Gufos.Controllers {
         }
 
         [HttpGet ("{id}")]
-        public async Task<ActionResult<Evento>> Get (int id) {
-            Evento eventoRetornado = await context.Evento.FindAsync (id);
+        public async Task<ActionResult<Evento>> Get (int id) 
+        {
+            Evento eventoRetornado = await repositorio.Get(id);
             if (eventoRetornado == null) {
                 return NotFound ();
             }
@@ -37,10 +38,10 @@ namespace Gufos.Controllers {
         }
 
         [HttpPost]
-        public async Task<ActionResult<Evento>> Post (Evento evento) {
+        public async Task<ActionResult<Evento>> Post (Evento evento) 
+        {
             try {
-                await context.Evento.AddAsync (evento);
-                await context.SaveChangesAsync ();
+                await repositorio.Post(evento);
 
             } catch (System.Exception) {
 
@@ -54,32 +55,32 @@ namespace Gufos.Controllers {
             if (id != evento.EventoId) {
                 return BadRequest ();
             }
-            context.Entry (evento).State = EntityState.Modified;
-
             try {
-                await context.SaveChangesAsync ();
-            } catch (DbUpdateConcurrencyException) {
-                var eventoValido = context.Evento.FindAsync (id);
-                if (eventoValido == null) {
+                await repositorio.Put(evento);
+            } catch (DbUpdateConcurrencyException) 
+            {
+                var eventoValido = await repositorio.Get(id);
+                if (eventoValido == null) 
+                {
                     return NotFound ();
                 }
+                else
+                {
+                    throw;
+                }
             }
-
-            await context.SaveChangesAsync ();
-
             return evento;
         }
 
         [HttpDelete ("{id}")]
 
-        public async Task<ActionResult<Evento>> Delete (int id) {
-            Evento eventoRetornado = await context.Evento.Include(c => c.Categoria).Include(l=> l.Localizacao).FirstOrDefaultAsync(e=>e.EventoId == id);
+        public async Task<ActionResult<Evento>> Delete (int id)
+        {
+            Evento eventoRetornado = await repositorio.Get(id);    
             if (eventoRetornado == null) {
                 return NotFound ();
             }
-            context.Evento.Remove (eventoRetornado);
-            await context.SaveChangesAsync ();
-
+            await repositorio.Delete(eventoRetornado);
             return eventoRetornado;
         }
 

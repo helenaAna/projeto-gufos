@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gufos.Models;
+using Gufos.Repositorio;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +10,13 @@ namespace Gufos.Controllers {
     [ApiController]
     [Produces("application/json")]
     public class CategoriaController : ControllerBase {
-        GufosContext context = new GufosContext();
+        
+        CategoriaRepositorio repositorio = new CategoriaRepositorio();
 
         [HttpGet]
         public async Task<ActionResult<List<Categoria>>> Get()
         {
-            List<Categoria> listaDeCategoria = await context.Categoria.ToListAsync();
+            List<Categoria> listaDeCategoria = await repositorio.Get();
             
             if(listaDeCategoria == null)
             {
@@ -25,7 +27,7 @@ namespace Gufos.Controllers {
         [HttpGet("{id}")]
          public async Task<ActionResult<Categoria>> Get(int id)
          {
-            Categoria categoriaRetornada = await context.Categoria.FindAsync(id);
+            Categoria categoriaRetornada = await repositorio.Get(id);
             if(categoriaRetornada == null)
             {
                 return NotFound();
@@ -37,9 +39,7 @@ namespace Gufos.Controllers {
          {
              try
              {
-                await context.Categoria.AddAsync(categoria);
-                await context.SaveChangesAsync(); 
-
+                await repositorio.Post(categoria);
              }
              
              catch (System.Exception)
@@ -57,36 +57,36 @@ namespace Gufos.Controllers {
             {
                 return BadRequest();
             }
-            context.Entry(categoria).State = EntityState.Modified;
-
+            
             try
             {
-                await context.SaveChangesAsync();
+                await repositorio.Put(categoria);
             }
             catch(DbUpdateConcurrencyException)
             {
-                var categoriaValida = context.Categoria.FindAsync(id);
+                var categoriaValida = await repositorio.Get(id);
                 if (categoriaValida == null)
                 {
                     return NotFound();
                 }
+                else
+                {
+                    throw;
+                }
             }
-
-            await context.SaveChangesAsync();
 
             return categoria;
         }
         [HttpDelete("{id}")]
 
-        public async Task<ActionResult<Categoria>> Delete (int id){
-        Categoria categoriaRetornada = await context.Categoria.FindAsync(id);
+        public async Task<ActionResult<Categoria>> Delete (int id)
+        {
+        Categoria categoriaRetornada = await repositorio.Get(id);
         if (categoriaRetornada == null)
         {
             return NotFound();
         }
-        context.Categoria.Remove(categoriaRetornada);
-        await context.SaveChangesAsync();
-
+        await repositorio.Delete(categoriaRetornada);    
         return categoriaRetornada;
         }
     }
