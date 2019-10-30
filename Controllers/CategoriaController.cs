@@ -41,7 +41,6 @@ namespace Gufos.Controllers {
              {
                 await repositorio.Post(categoria);
              }
-             
              catch (System.Exception)
              {
                  

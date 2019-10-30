@@ -25,6 +25,8 @@ namespace Gufos.Repositorio
             return listaDeEvento;
         }
 
+        
+
         public async Task<Evento> Get(int id)
         {
             Evento eventoRetornado = await context.Evento

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gufos.Models;
+using Gufos.Repositorio;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace Gufos.Controllers
@@ -10,11 +11,11 @@ namespace Gufos.Controllers
     [Produces ("application/json")]
     public class TipoUsuarioController : ControllerBase 
     {
-        GufosContext context = new GufosContext ();
+        TipoUsuarioRepositorio repositorio = new TipoUsuarioRepositorio();
 
         [HttpGet]
         public async Task<ActionResult<List<TipoUsuario>>> Get () {
-            List<TipoUsuario> listaDeTipoUsuario = await context.TipoUsuario.ToListAsync ();
+            List<TipoUsuario> listaDeTipoUsuario = await repositorio.Get();
 
             if (listaDeTipoUsuario == null) {
                 return NotFound ();
@@ -24,7 +25,7 @@ namespace Gufos.Controllers
 
         [HttpGet ("{id}")]
         public async Task<ActionResult<TipoUsuario>> Get (int id) {
-            TipoUsuario tipoUsuarioRetornado = await context.TipoUsuario.FindAsync(id);
+            TipoUsuario tipoUsuarioRetornado = await repositorio.Get(id);
 
             if (tipoUsuarioRetornado == null) {
                 return NotFound ();
@@ -35,9 +36,7 @@ namespace Gufos.Controllers
         [HttpPost]
         public async Task<ActionResult<TipoUsuario>> Post (TipoUsuario tipoUsuario) {
             try {
-                await context.TipoUsuario.AddAsync (tipoUsuario);
-                await context.SaveChangesAsync ();
-
+                await repositorio.Post(tipoUsuario);
             } catch (System.Exception) {
 
                 throw;
@@ -50,18 +49,20 @@ namespace Gufos.Controllers
             if (id != tipoUsuario.TipoUsuarioId) {
                 return BadRequest ();
             }
-            context.Entry (tipoUsuario).State = EntityState.Modified;
-
             try {
-                await context.SaveChangesAsync ();
-            } catch (DbUpdateConcurrencyException) {
-                var tipoUsuarioValido = context.TipoUsuario.FindAsync (id);
+                await repositorio.Put(tipoUsuario);
+            } 
+            catch (DbUpdateConcurrencyException) 
+            {
+                var tipoUsuarioValido = await repositorio.Get(id);
                 if (tipoUsuarioValido == null) {
                     return NotFound ();
                 }
+                else
+                {
+                    throw;
+                }
             }
-
-            await context.SaveChangesAsync ();
 
             return tipoUsuario;
         }
@@ -69,13 +70,11 @@ namespace Gufos.Controllers
         [HttpDelete ("{id}")]
 
         public async Task<ActionResult<TipoUsuario>> Delete (int id) {
-            TipoUsuario tipoUsuarioRetornado = await context.TipoUsuario.FindAsync(id);
+            TipoUsuario tipoUsuarioRetornado = await repositorio.Get(id);
             if (tipoUsuarioRetornado == null) {
                 return NotFound ();
             }
-            context.TipoUsuario.Remove (tipoUsuarioRetornado);
-            await context.SaveChangesAsync ();
-
+            await repositorio.Delete(tipoUsuarioRetornado);
             return tipoUsuarioRetornado;
         }
     }

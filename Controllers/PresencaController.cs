@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gufos.Models;
+using Gufos.Repositorio;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,17 +10,22 @@ namespace Gufos.Controllers {
     [ApiController]
     [Produces ("application/json")]
     public class PresencaController : ControllerBase {
-        GufosContext context = new GufosContext ();
+        PresencaRepositorio repopositorio = new PresencaRepositorio();
 /// <summary>
 /// Método de consulta de presenças cadastradas
 /// </summary>
 /// <returns> Retorna as listas de presença já cadastradas</returns>
         [HttpGet]
         public async Task<ActionResult<List<Presenca>>> Get () {
-            List<Presenca> listaDePresenca = await context.Presenca.Include (e => e.Evento).Include(u => u.Usuario).ToListAsync ();
+            List<Presenca> listaDePresenca = await repopositorio.Get();
 
             if (listaDePresenca == null) {
                 return NotFound ();
+            }
+            foreach (var item in listaDePresenca)
+            {
+                item.Evento.Presenca = null;
+                item.Usuario.Presenca = null;
             }
             return listaDePresenca;
         }
@@ -30,7 +36,7 @@ namespace Gufos.Controllers {
 /// <returns></returns>
         [HttpGet ("{id}")]
         public async Task<ActionResult<Presenca>> Get (int id) {
-            Presenca presencaRetornada = await context.Presenca.FindAsync (id);
+            Presenca presencaRetornada = await repopositorio.Get(id);
             if (presencaRetornada == null) {
                 return NotFound ();
             }
@@ -44,9 +50,8 @@ namespace Gufos.Controllers {
         [HttpPost]
         public async Task<ActionResult<Presenca>> Post (Presenca presenca) {
             try {
-                await context.Presenca.AddAsync (presenca);
-                await context.SaveChangesAsync ();
-
+                await repopositorio.Post (presenca);
+                
             } catch (System.Exception) {
 
                 throw;
@@ -64,19 +69,20 @@ namespace Gufos.Controllers {
             if (id != presenca.PresencaId) {
                 return BadRequest ();
             }
-            context.Entry (presenca).State = EntityState.Modified;
-
             try {
-                await context.SaveChangesAsync ();
-            } catch (DbUpdateConcurrencyException) {
-                var PresencaValida = context.Presenca.FindAsync (id);
-                if (PresencaValida == null) {
+                await repopositorio.Put(presenca);
+            } catch (DbUpdateConcurrencyException) 
+            {
+                var PresencaValida = repopositorio.Get(id);
+                if (PresencaValida == null) 
+                {
                     return NotFound ();
                 }
+                else
+                {
+                    throw;
+                }
             }
-
-            await context.SaveChangesAsync ();
-
             return presenca;
         }
 /// <summary>
@@ -87,13 +93,11 @@ namespace Gufos.Controllers {
         [HttpDelete ("{id}")]
 
         public async Task<ActionResult<Presenca>> Delete (int id) {
-            Presenca presencaRetornada = await context.Presenca.FindAsync (id);
+            Presenca presencaRetornada = await repopositorio.Get(id);
             if (presencaRetornada == null) {
                 return NotFound ();
             }
-            context.Presenca.Remove (presencaRetornada);
-            await context.SaveChangesAsync ();
-
+            await repopositorio.Delete(presencaRetornada);
             return presencaRetornada;
         }
     }
